@@ -3,6 +3,7 @@
 # Core
 import json
 import sys
+import subprocess
 # Libs
 from clint import args
 from clint.textui import puts, colored, indent
@@ -76,7 +77,18 @@ class Plugin(object):
         }
         """
         for entry in self.entries:
-            print entry
+            # Using a temp file to create an entry
+            with open('tmpfile', 'w') as f:
+                f.write(entry['text'])
+                if 'tags' in entry:
+                    f.write(entry['tags'] + "\n")
+            cmd = 'dayone -d="' + entry['datetime'].strftime("%m/%d/%Y %l:%M%p") + '" new < tmpfile'
+            puts(colored.blue(cmd))
+            subprocess.call(cmd, shell=True)
+
+        # Cleaning up the tmpfile
+        subprocess.call(['rm', 'tmpfile'])
+
 
 if __name__ == '__main__':
     puts('Args are:')

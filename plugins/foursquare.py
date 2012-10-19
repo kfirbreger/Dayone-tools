@@ -48,7 +48,7 @@ class DTFourSquare(dtools.Plugin):
         # All is well, we can process
         # Geting yesterday's date
         yest = date.today() - timedelta(days=1)
-        self.entries = [{'text': '##Foursquare checkings for ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
+        self.entries = [{'text': '## Foursquare checkings for ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
         # Going through the entries, importing only items that are from yesterday
         # @TODO - Also do not import items before last run.
         for item in data.entries:
