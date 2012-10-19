@@ -1,5 +1,5 @@
 import dtools
-import simplejson as json
+import json
 
 
 class DTInstagram(dtools.Plugin):

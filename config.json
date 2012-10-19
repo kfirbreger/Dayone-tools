@@ -1,17 +1,9 @@
 {
-    last_run: 0,
-    plugins: [
+    "last_run": 0,
+    "plugins": [
         {
-            name: 'Strava',
-            location: 'plugins/drstrava'
-        },
-        {
-            name: 'Twitter',
-            location: 'plugins/dttwitter'
-        },
-        {
-            name: 'Instagram',
-            location: 'plugins/dtinstagram'
+            "name": "foursquare",
+            "location": "plugins/foursquare"
         }
     ]
 }
