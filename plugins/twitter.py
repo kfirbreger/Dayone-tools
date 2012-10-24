@@ -1,5 +1,5 @@
 # Core
-import datetime
+from datetime import datetime
 # Libs
 import requests
 from clint.textui import puts, colored
@@ -10,6 +10,7 @@ import dtools
 class DTTwitter(dtools.Plugin):
 
     def __init__(self):
+        super(DTTwitter, self).__init__()
         # Urls used in the requests to twitter
         self.url = {
             'favs': 'http://api.twitter.com/1/favorites.json',
@@ -22,19 +23,17 @@ class DTTwitter(dtools.Plugin):
             'exclude_replies': True,
             'include_entities': True
         }
-        # Tweets that will get their own entry
-        self.own_entries = []
         self.config_filename = self.config_path + 'twitter.json'
         # trying to load the config
         if not self.loadConfig():
             # There was no config file, creating it
-            self.createConfigFile(self.getConfigDict)
+            self.createConfigFile(self.getConfigDict(), self.config_filename)
             self.config = None
 
     def getConfigDict(self):
         conf = {
             'screen_names': [],
-            'last_run': 0,
+            'last_run': "1970-01-01T00:00:00",
             'import_images': False,
             'favorites': True,
             'retweet': True,
@@ -49,10 +48,13 @@ class DTTwitter(dtools.Plugin):
         if self.config is None:
             puts(colored.blue('Config file made, please fill in the required details'))
             return
-        now = datetime.now()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        last = self.config['last_run']
+        if last.isoformat() == "1970-01-01T00:00:00":
+            last = 'start'
         # Posts contains the posts to make. The first element is the general twit post
         # The rest will be image including individual images
-        posts = ["##Tweets from " + self.conf['last_run'] + " till " + now + "\n\n"]
+        posts = ["##Tweets from " + last + " till " + now + "\n\n"]
         # Creating the import
         for screen_name in self.config['screen_names']:
             # Adding current screen name
@@ -70,6 +72,9 @@ class DTTwitter(dtools.Plugin):
                 r = requests.get(self.favs, params=self.uparams)
                 for item in r.json:
                     posts[0] += self.__createPostItem(item)  # Favs are not allowed their own entry
+        self.config['datetime'] = datetime.now().isoformat()
+        self.writeToJournal()
+        self.createConfigFile(self.config, self.config_filename)
 
     def __createPostItem(self, item):
         """
@@ -93,3 +98,10 @@ class DTTwitter(dtools.Plugin):
         Creates a post from the twit with the image
         """
         pass
+
+
+def execute(dry=False):
+    plugin = DTTwitter()
+    if dry:
+        plugin.dryRun()
+    plugin.run()

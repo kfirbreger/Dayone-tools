@@ -22,7 +22,7 @@ class DTFourSquare(dtools.Plugin):
     def getConfigDict(self):
         conf = {
             "feed": "",
-            "last_run": 0,
+            "last_run": "1970-01-01T00:00:00",
             "import_images": False,
             "own_post_on_text": True,
             "tags": ""
@@ -60,16 +60,17 @@ class DTFourSquare(dtools.Plugin):
                 continue
             # Deciding if this deserves its own post
             if self.config['own_post_on_text'] and (len(item.description) > (2 + len(item.title))):
-                self.entries.append({'test': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
+                self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
             else:
                 self.entries[0]['text'] += self.__createPostItem(item)
-
         # Adding tags
         if len(self.config['tags']) > 0:
             for post in self.entries:
                 post['tags'] = self.config['tags']
 
+        self.config['datetime'] = datetime.now().isoformat()
         self.writeToJournal()
+        self.createConfigFile(self.config, self.config_filename)
 
     def __createPost(self, item):
         text = item.description[2:]
@@ -79,6 +80,8 @@ class DTFourSquare(dtools.Plugin):
         return "* [%s](%s)\n" % (item.title, item.link)
 
 
-def execute():
+def execute(dry=False):
     plugin = DTFourSquare()
+    if dry:
+        plugin.dryRun()
     plugin.run()
