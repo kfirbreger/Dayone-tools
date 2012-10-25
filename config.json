@@ -1,0 +1,12 @@
+{
+    "plugins": [
+        {
+            "name": "foursquare",
+            "location": "plugins/foursquare"
+        },
+        {
+            "name": "dtinstagram",
+            "location": "plugins/dtinstagram"
+        }
+    ]
+}
