@@ -22,7 +22,6 @@ class DTFourSquare(dtools.Plugin):
     def getConfigDict(self):
         conf = {
             "feed": "",
-            "last_run": "1970-01-01T00:00:00",
             "import_images": False,
             "own_post_on_text": True,
             "tags": ""

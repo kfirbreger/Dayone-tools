@@ -95,7 +95,8 @@ class Plugin(object):
             star: Should this be starred
         }
         """
-        self.config['last_run'] = datetime.now().isoformat().split('.')[0]
+        if 'last_run' in self.config:
+            self.config['last_run'] = datetime.now().isoformat().split('.')[0]
         for entry in self.entries:
             print entry
             # Using a temp file to create an entry
@@ -119,7 +120,7 @@ class Plugin(object):
         # Cleaning up the tmpfile
         subprocess.call(['rm', 'tmpfile'])
         # Update last run only if this is not a dry run
-        if not self.dry:
+        if 'last_run' in self.config and not self.dry:
             self.createConfigFile(self.config, self.config_filename)
 
 
