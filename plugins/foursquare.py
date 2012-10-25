@@ -56,7 +56,7 @@ class DTFourSquare(dtools.Plugin):
             post_date = date(*item.published_parsed[:3])
             # Date - date gives a timedelta object. We then call
             # its total seconds function to get seconds difference
-            if int((yest - post_date).total_seconds()) != 0:
+            if yest != post_date:
                 continue
             # Deciding if this deserves its own post
             if self.config['own_post_on_text'] and (len(item.description) > (2 + len(item.title))):

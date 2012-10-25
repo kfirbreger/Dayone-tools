@@ -54,7 +54,7 @@ class DTInstaPaper(dtools.Plugin):
             post_date = date(*item.published_parsed[:3])
             # Date - date gives a timedelta object. We then call
             # its total seconds function to get seconds difference
-            if int((yest - post_date).total_seconds()) != 0:
+            if yest != post_date:
                 continue
             # Deciding if this deserves its own post
             saved_for_later = True
@@ -65,6 +65,7 @@ class DTInstaPaper(dtools.Plugin):
 
     def __createPostEntry(self, item):
         return "* [%s](%s)\n" % (item.title, item.link)
+
 
 def execute(dry=False):
     plugin = DTInstaPaper()

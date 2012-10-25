@@ -22,8 +22,8 @@ class DTStrava(dtools.Plugin):
 
     def getConfigDict(self):
         conf = {
-            'last_run': 0,
-            'uid': 0,
+            'last_run': "1970-01-01T00:00:00",
+            'athlete_id': 0,
             'tags': ''
         }
         return conf
@@ -32,7 +32,21 @@ class DTStrava(dtools.Plugin):
         if self.config is None:
             puts(colored.blue('Config file made, please fill in the required details'))
             return
-        now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        if self.config['athlete_id'] == 0:
+            puts(colored.yellow('Athlete id not set in config, skipping Strava'))
+            return
+
+        #now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        r = requests.get('http://www.strava.com/api/v1/rides', params={'athleteId': self.config['athlete_id']})
+        for ride in r.json['rides']:
+            ride_data = requests.get('http://www.strava.com/api/v1/rides/' + ride['id']).json
+            # Checking if this is newer than last run
+            ride_date = datetime.strpformat(ride_data['ride'])
+            # If its an old entry move on
+            if ride_date < self.config['last_run']:
+                continue
+
+            # Create a post
 
 
 def execute(dry=False):
