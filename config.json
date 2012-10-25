@@ -7,6 +7,18 @@
         {
             "name": "dtinstagram",
             "location": "plugins/dtinstagram"
+        },
+        {
+            "name": "github",
+            "location": "plugins/github"
+        },
+        {
+            "name": "instapaper",
+            "location": "plugins/instapaper"
+        },
+        {
+            "name": "strava",
+            "location": "plugin/strava"
         }
     ]
 }

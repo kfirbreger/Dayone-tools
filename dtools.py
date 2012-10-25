@@ -64,7 +64,8 @@ class Plugin(object):
             puts(colored.red("No settings file found"))
             return False
         # Rendering the last run to a datetime
-        self.config['last_run'] = datetime.strptime(self.config['last_run'], "%Y-%m-%dT%H:%M:%S")
+        if 'last_run' in self.config:
+            self.config['last_run'] = datetime.strptime(self.config['last_run'], "%Y-%m-%dT%H:%M:%S")
         return True
 
     def createConfigFile(self, config_dict, filename):
@@ -94,7 +95,8 @@ class Plugin(object):
             star: Should this be starred
         }
         """
-        self.config['last_run'] = datetime.now().isoformat().split('.')[0]
+        if 'last_run' in self.config:
+            self.config['last_run'] = datetime.now().isoformat().split('.')[0]
         for entry in self.entries:
             print entry
             # Using a temp file to create an entry
@@ -118,7 +120,7 @@ class Plugin(object):
         # Cleaning up the tmpfile
         subprocess.call(['rm', 'tmpfile'])
         # Update last run only if this is not a dry run
-        if not self.dry:
+        if 'last_run' in self.config and not self.dry:
             self.createConfigFile(self.config, self.config_filename)
 
 

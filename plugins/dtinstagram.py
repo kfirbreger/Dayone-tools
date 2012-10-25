@@ -61,7 +61,7 @@ class DTInstagram(dtools.Plugin):
             post = self.__createPost(media)
             if post:
                 if len(self.config['tags']) > 0:
-                    post['txt'] += "\n"
+                    post['text'] += "\n"
                     post['tags'] = self.config['tags']
                 self.entries.append(post)
 
