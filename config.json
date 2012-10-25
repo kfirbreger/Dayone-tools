@@ -11,6 +11,10 @@
         {
             "name": "github",
             "location": "plugins/github"
+        },
+        {
+            "name": "instapaper",
+            "location": "plugins/instapaper"
         }
     ]
 }

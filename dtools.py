@@ -64,7 +64,8 @@ class Plugin(object):
             puts(colored.red("No settings file found"))
             return False
         # Rendering the last run to a datetime
-        self.config['last_run'] = datetime.strptime(self.config['last_run'], "%Y-%m-%dT%H:%M:%S")
+        if 'last_run' in self.config:
+            self.config['last_run'] = datetime.strptime(self.config['last_run'], "%Y-%m-%dT%H:%M:%S")
         return True
 
     def createConfigFile(self, config_dict, filename):
