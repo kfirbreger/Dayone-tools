@@ -15,6 +15,10 @@
         {
             "name": "instapaper",
             "location": "plugins/instapaper"
+        },
+        {
+            "name": "strava",
+            "location": "plugin/strava"
         }
     ]
 }
