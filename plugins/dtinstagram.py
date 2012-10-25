@@ -36,12 +36,7 @@ class DTInstagram(dtools.Plugin):
             print "Trying to get access token before config. Stopping."
             return
 
-        raw_scope = raw_input("Requested scope (separated by spaces, blank for just basic read): ").strip()
-        scope = raw_scope.split(' ')
-        # For basic, API seems to need to be set explicitly
-        if not scope or scope == [""]:
-            scope = ["basic"]
-
+        scope = ["basic"]
         api = client.InstagramAPI(client_id=self.config['client_id'], client_secret=self.config['client_secret'], redirect_uri=self.config['redirect_uri'])
         redirect_uri = api.get_authorize_login_url(scope=scope)
 
