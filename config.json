@@ -1,5 +1,4 @@
 {
-    "last_run": "1970-01-01T00:00:00",
     "plugins": [
         {
             "name": "foursquare",
@@ -8,10 +7,6 @@
         {
             "name": "dtinstagram",
             "location": "plugins/dtinstagram"
-        },
-        {
-            "name": "twitter",
-            "location": "plugins/twitter"
         }
     ]
 }

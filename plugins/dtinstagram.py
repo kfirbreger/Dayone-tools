@@ -1,6 +1,5 @@
 # Core
 from StringIO import StringIO
-from datetime import datetime
 # Libs
 from instagram import client
 from PIL import Image
@@ -54,6 +53,7 @@ class DTInstagram(dtools.Plugin):
         # Updating the data to include the access token and user id
         self.config['access_token'] = access_token[0]
         self.config['user_id'] = access_token[1]['id']
+        self.config['last_run'] = self.config['last_run'].isoformat().split('.')[0]
         # Saving the updated config
         self.createConfigFile(self.config, self.config_filename)
 
@@ -64,33 +64,44 @@ class DTInstagram(dtools.Plugin):
         # Creating posts
         for media in recent_media:
             post = self.__createPost(media)
-            if len(self.config['tags']) > 0:
-                post['tags'] = self.config['tags']
-            # Checking if this is a new post
-            delta = post['datetime'] - self.config['last_run']
-            if delta.total_seconds() > 0:
+            if post:
+                if len(self.config['tags']) > 0:
+                    post['txt'] += "\n"
+                    post['tags'] = self.config['tags']
                 self.entries.append(post)
-        # Timestamping last run
-        self.config['datetime'] = datetime.now().isoformat()
+
         self.writeToJournal()
-        self.createConfigFile(self.config, self.config_filename)
 
     def __createPost(self, media):
+        # Removing the Comment: username said and the " in begin and end
+        if media.caption is None:
+            txt = ''
+        else:
+            txt = str(media.caption)
+            txt = txt[txt.find('"') + 1:-1]
+            # Replacing the # before tags with %
+            txt = txt.replace('#', '%')
+            txt += "\n"
         post = {
-            'text': str(media.caption)
+            'text': txt
         }
-        # Getting instagram filename
-        filename = media.images['standard_resolution'].url
-        filename = filename.split('/')[-1]
-        r = requests.get(media.images['standard_resolution'].url)
-        i = Image.open(StringIO(r.content))
-        i.save(filename)
-        post['image'] = filename
+        # Checking if this is a new post
         post['datetime'] = media.created_time
-        # Marking as fav if above threshold
-        if self.config['like_fav_threshold'] > -1:
-            if len(media.likes) >= self.config['like_fav_threshold']:
-                post['star'] = True
+        delta = post['datetime'] - self.config['last_run']
+        if delta.total_seconds() > 0:
+            # Getting instagram filename
+            filename = media.images['standard_resolution'].url
+            filename = filename.split('/')[-1]
+            r = requests.get(media.images['standard_resolution'].url)
+            i = Image.open(StringIO(r.content))
+            i.save(filename)
+            post['image'] = filename
+            # Marking as fav if above threshold
+            if self.config['like_fav_threshold'] > -1:
+                if len(media.likes) >= self.config['like_fav_threshold']:
+                    post['star'] = True
+        else:
+            post = False
         return post
 
 
@@ -98,7 +109,8 @@ def execute(dry=False):
     plugin = DTInstagram()
     if dry:
         plugin.dryRun()
-    if plugin.config['access_token'] == '':
-        # No access Token, request one
-        plugin.getAccessToken()
-    plugin.run()
+    if plugin.config is not None:
+        if plugin.config['access_token'] == '':
+            # No access Token, request one
+            plugin.getAccessToken()
+        plugin.run()

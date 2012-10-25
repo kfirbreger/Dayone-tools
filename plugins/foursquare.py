@@ -31,6 +31,7 @@ class DTFourSquare(dtools.Plugin):
 
     def run(self):
         data = None
+        checkins = False  # Pessimism
         if self.config is None:
             puts(colored.blue('Config file made, please fill in the required details'))
             return
@@ -48,7 +49,7 @@ class DTFourSquare(dtools.Plugin):
         # All is well, we can process
         # Geting yesterday's date
         yest = date.today() - timedelta(days=1)
-        self.entries = [{'text': '## Foursquare checkings for ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
+        self.entries = [{'text': '## Foursquare checkins for ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
         # Going through the entries, importing only items that are from yesterday
         # @TODO - Also do not import items before last run.
         for item in data.entries:
@@ -62,15 +63,19 @@ class DTFourSquare(dtools.Plugin):
             if self.config['own_post_on_text'] and (len(item.description) > (2 + len(item.title))):
                 self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
             else:
+                checkins = True
                 self.entries[0]['text'] += self.__createPostItem(item)
         # Adding tags
         if len(self.config['tags']) > 0:
             for post in self.entries:
+                post['text'] += "\n\n"
                 post['tags'] = self.config['tags']
-
-        self.config['datetime'] = datetime.now().isoformat()
-        self.writeToJournal()
-        self.createConfigFile(self.config, self.config_filename)
+        # Removing first element if there are no global checkins in it
+        if not checkins:
+            self.entries = self.entries[1:]
+        # Create entries only if there actual entries
+        if len(self.entries) > 0:
+            self.writeToJournal()
 
     def __createPost(self, item):
         text = item.description[2:]

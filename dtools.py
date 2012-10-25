@@ -94,6 +94,7 @@ class Plugin(object):
             star: Should this be starred
         }
         """
+        self.config['last_run'] = datetime.now().isoformat().split('.')[0]
         for entry in self.entries:
             print entry
             # Using a temp file to create an entry
@@ -103,7 +104,7 @@ class Plugin(object):
                     f.write(entry['tags'] + "\n")
             cmd = 'dayone -d="' + entry['datetime'].strftime("%m/%d/%Y %l:%M%p") + '"'
             if 'image' in entry:
-                cmd += ' -photo-file=' + entry['image']
+                cmd += ' --photo-file=' + entry['image']
             if 'star' in entry:
                 cmd += ' --starred=true'
             cmd += ' new < tmpfile'
@@ -116,15 +117,26 @@ class Plugin(object):
 
         # Cleaning up the tmpfile
         subprocess.call(['rm', 'tmpfile'])
+        # Update last run only if this is not a dry run
+        if not self.dry:
+            self.createConfigFile(self.config, self.config_filename)
 
 
 if __name__ == '__main__':
     puts('Args are:')
-
     indent(4)
     puts(str(args.all))
     indent(-4)
     puts('Running')
     dt = Dayone()
-    dt.dryRun()
+
+    for arg in args.all:
+        if arg == '--dry':
+            dt.dryRun()
+        elif arg == '--help':
+            print """
+            Dayone import tool.
+            Some more
+            """
+            exit()
     dt.run()

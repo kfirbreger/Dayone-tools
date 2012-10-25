@@ -72,9 +72,7 @@ class DTTwitter(dtools.Plugin):
                 r = requests.get(self.favs, params=self.uparams)
                 for item in r.json:
                     posts[0] += self.__createPostItem(item)  # Favs are not allowed their own entry
-        self.config['datetime'] = datetime.now().isoformat()
         self.writeToJournal()
-        self.createConfigFile(self.config, self.config_filename)
 
     def __createPostItem(self, item):
         """
