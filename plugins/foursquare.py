@@ -48,9 +48,10 @@ class DTFourSquare(dtools.Plugin):
         # All is well, we can process
         # Geting yesterday's date
         yest = date.today() - timedelta(days=1)
-        self.entries = [{'text': '## Foursquare checkins for ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
+        self.entries = [{'text': '', 'datetime': datetime.combine(yest, time.max)}]
         # Going through the entries, importing only items that are from yesterday
-        # @TODO - Also do not import items before last run.
+        # For the daily summary reversing the order of import so that
+        # the oldest will be at the top.
         for item in data.entries:
             # Are we at yesterday?
             post_date = date(*item.published_parsed[:3])
@@ -63,7 +64,7 @@ class DTFourSquare(dtools.Plugin):
                 self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
             else:
                 checkins = True
-                self.entries[0]['text'] += self.__createPostItem(item)
+                self.entries[0]['text'] = self.__createPostItem(item) + self.entries[0]['text']
         # Adding tags
         if len(self.config['tags']) > 0:
             for post in self.entries:
@@ -72,12 +73,15 @@ class DTFourSquare(dtools.Plugin):
         # Removing first element if there are no global checkins in it
         if not checkins:
             self.entries = self.entries[1:]
+        else:
+            self.entries[0]['text'] = '## Foursquare checkins for ' + yest.strftime('%d-%m-%Y') + "\n" + self.entries[0]['text']
         # Create entries only if there actual entries
         if len(self.entries) > 0:
             self.writeToJournal()
 
     def __createPost(self, item):
-        text = item.description[2:]
+        text = item.description[2:].split('-')
+        text = "[%s](%s) - %s" % (text[0], item.link, ''.join(text[1:]))
         return text
 
     def __createPostItem(self, item):
