@@ -49,6 +49,10 @@ class DTGitHub(dtools.Plugin):
             txt = self.__createPostItem(item, created.strftime('%Y-%m-%d %H:%M'))
             if txt is not None:
                 self.entries[0]['text'] += txt
+        # Adding tags if needed
+        if len(self.config['tags']) > 0:
+            self.entries[0]['text'] += "\n"
+            self.entries[0]['tags'] = self.config['tags']
         # Add entry if something happend yesterday
         if activity:
             self.writeToJournal()
@@ -64,7 +68,7 @@ class DTGitHub(dtools.Plugin):
             txt = "* [%s](%s) Created gist %s\n" % (created, item['payload']['url'], item['payload']['name'])
         if item['type'] == u"WatchEvent":
             if item['payload']['action'] == "started":
-              txt = "* %s Started watching [%s](%s)\n" %(created , item['repository']['name'], item['repository']['url'])
+                txt = "* %s Started watching [%s](%s)\n" % (created, item['repository']['name'], item['repository']['url'])
         return txt
 
     def __parseDateTime(self, dt_string):
@@ -74,10 +78,11 @@ class DTGitHub(dtools.Plugin):
         except:
             print "Error"
 
-        delta = timedelta(hours = offset / 100)
+        delta = timedelta(hours=(offset / 100))
         time = datetime.strptime(dt_string[:-6], '%Y-%m-%dT%H:%M:%S')
         time -= delta
         return time
+
 
 def execute(dry=False):
     plugin = DTGitHub()

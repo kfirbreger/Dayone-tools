@@ -59,6 +59,10 @@ class DTInstaPaper(dtools.Plugin):
             # Deciding if this deserves its own post
             saved_for_later = True
             self.entries[0]['text'] += self.__createPostEntry(item)
+        # Adding tags if needed
+        if len(self.config['tags']) > 0:
+            self.entries[0]['text'] += "\n"
+            self.entries[0]['tags'] = self.config['tags']
 
         if saved_for_later:
             self.writeToJournal()
