@@ -28,9 +28,10 @@ class Dayone(object):
         """
         self.dry = True
 
-    def run(self):
-        puts(unicode(self.config))
-        for plug in self.config['plugins']:
+    def run(self, plugin_select=[]):
+        if len(plugin_select) == 0:
+            plugin_select = self.config['plugins']
+        for plug in plugin_select:
             puts('Running ' + plug['name'])
             dtplugin = getattr(__import__("plugins", fromlist=[str(plug['name'])]), plug['name'])
             dtplugin.execute(self.dry)
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     indent(-4)
     puts('Running')
     dt = Dayone()
-
+    plugins = []
     for arg in args.all:
         if arg == '--dry':
             dt.dryRun()
@@ -141,4 +142,9 @@ if __name__ == '__main__':
             Some more
             """
             exit()
-    dt.run()
+        elif arg.startswith('--plugin'):
+            plugins.append(arg.split('=')[1])
+        else:
+            puts(colored.red('Unknown arg %s terminating' % arg))
+            exit()
+    dt.run(plugins)
