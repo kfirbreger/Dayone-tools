@@ -67,20 +67,20 @@ class DTFourSquare(dtools.Plugin):
         # Adding tags
         if len(self.config['tags']) > 0:
             for post in self.entries:
-                post['text'] += "\n\n"
+                post['text'] += u"\n\n"
                 post['tags'] = self.config['tags']
         # Removing first element if there are no global checkins in it
         if not checkins:
             self.entries = self.entries[1:]
         else:
-            self.entries[0]['text'] = '## Foursquare checkins for ' + yest.strftime('%d-%m-%Y') + "\n" + self.entries[0]['text']
+            self.entries[0]['text'] = u'## Foursquare checkins for ' + yest.strftime('%d-%m-%Y') + "\n" + self.entries[0]['text']
         # Create entries only if there actual entries
         if len(self.entries) > 0:
             self.writeToJournal()
 
     def __createPost(self, item):
         text = item.description[2:].split('-')
-        text = "[%s](%s) - %s" % (text[0], item.link, ''.join(text[1:]))
+        text = u"[%s](%s) - %s" % (text[0], item.link, ''.join(text[1:]))
         return text
 
     def __createPostItem(self, item):
