@@ -102,7 +102,7 @@ class Plugin(object):
             print entry
             # Using a temp file to create an entry
             with open('tmpfile', 'w') as f:
-                f.write(entry['text'])
+                f.write(entry['text'].encode('UTF-8'))
                 if 'tags' in entry:
                     f.write(entry['tags'] + "\n")
             cmd = 'dayone -d="' + entry['datetime'].strftime("%m/%d/%Y %l:%M%p") + '"'
