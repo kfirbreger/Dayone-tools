@@ -40,7 +40,9 @@ class DTTwitter(dtools.Plugin):
             'tags': '',
             # As of 1.1 twitter requires OAuth for everything
             'access_token': '',
-            'access_token_secret': ''
+            'access_token_secret': '',
+            'client_id': '',
+            'client_id_secret': '',
         }
         return conf
 
