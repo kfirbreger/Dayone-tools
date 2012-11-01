@@ -143,7 +143,8 @@ if __name__ == '__main__':
             """
             exit()
         elif arg.startswith('--plugin'):
-            plugins.append(arg.split('=')[1])
+            plugin_name = arg.split('=')[1]
+            plugins.append({"name": plugin_name, "location": "plugins/" + plugin_name})
         else:
             puts(colored.red('Unknown arg %s terminating' % arg))
             exit()
