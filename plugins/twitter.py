@@ -2,6 +2,7 @@
 from datetime import datetime
 # Libs
 import requests
+from requests.auth import OAuth1
 from clint.textui import puts, colored
 # Project
 import dtools
@@ -39,10 +40,11 @@ class DTTwitter(dtools.Plugin):
             'retweet': True,
             'tags': '',
             # As of 1.1 twitter requires OAuth for everything
-            'access_token': '',
-            'access_token_secret': '',
-            'client_id': '',
-            'client_id_secret': '',
+            # Per screen name there is an access token and secret
+            'access_token': [],
+            'access_token_secret': [],
+            'client_key': '',
+            'client_key_secret': '',
         }
         return conf
 
@@ -58,11 +60,17 @@ class DTTwitter(dtools.Plugin):
         # The rest will be image including individual images
         posts = ["##Tweets from " + last + " till " + now + "\n\n"]
         # Creating the import
-        for screen_name in self.config['screen_names']:
+        # for screen_name in self.config['screen_names']:
+        for i in range(len(self.config['screen_names'])):
+            screen_name = self.config['screen_names'][i]
+            oauth = OAuth1(self.config['client_key'], self.config['client_key_secret'],
+                            self.config['access_token'][i], self.config['access_token_secret'][i],
+                            signature_type='auth_header')
             # Adding current screen name
             self.uparams['screen_name'] = screen_name
             # Sending the request
-            r = requests.get(self.timeline, params=self.uparams)
+            r = requests.get(self.timeline, params=self.uparams, auth=oauth)
+            print r.json
             for item in r.json:
                 # Checking if there is an image
                 if self.__hasImage(item):
