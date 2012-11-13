@@ -114,8 +114,9 @@ class DTTwitter(dtools.Plugin):
         p = item['created_at'].find(':')
         post_time = item['created_at'][p - 2: p + 3]
         item_url = u"https://twitter.com/" + unicode(item['user']['screen_name']) + u"/status/" + unicode(item['id'])
+        # Changing new line for space so that markdown stays good.
+        txt = item['text'].replace("\n", " ")
         # Making links actually link
-        txt = item['text']
         for link in item['entities']['urls']:
             new_url = link['url']
             if self.config['replace_short_url']:
