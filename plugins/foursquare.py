@@ -59,8 +59,12 @@ class DTFourSquare(dtools.Plugin):
             if yest != post_date:
                 continue
             # Deciding if this deserves its own post
-            if self.config['own_post_on_text'] and (len(item.description) > (2 + len(item.title))):
-                self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
+            if len(item.description) > (2 + len(item.title)):
+                # Create an extra post?
+                if self.config['own_post_on_text']:
+                    self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
+                else:
+                    self.entries[0]['text'] = "* " + self.__createPost(item) + "\n" + self.entries[0]['text']
             else:
                 checkins = True
                 self.entries[0]['text'] = self.__createPostItem(item) + self.entries[0]['text']
