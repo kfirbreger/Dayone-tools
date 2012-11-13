@@ -57,6 +57,7 @@ class DTTwitter(dtools.Plugin):
             return
         # Geting yesterday's date
         twitts = False
+        favs = False
         yest = date.today() - timedelta(days=1)
         self.entries = [{'text': '', 'datetime': datetime.combine(yest, time.max)}]
         # Creating the import
@@ -93,9 +94,10 @@ class DTTwitter(dtools.Plugin):
                     post_date = dt.date()
                     if yest != post_date:
                         continue
-                    twitts = True
+                    favs = True
                     fav_text = self.__createPostItem(item) + fav_text  # Favs are not allowed their own entry
-                fav_text = u"### Favories\n\n" + fav_text
+                if favs:
+                    fav_text = u"### Favories\n\n" + fav_text
             else:
                 fav_text = u''
         # Adding title
@@ -120,7 +122,7 @@ class DTTwitter(dtools.Plugin):
                 new_url = link['expanded_url']
             txt = txt.replace(link['url'], u'[' + new_url + u'](' + new_url + u')')
 
-        return "* [%s](%s) %s" % (post_time, item_url, txt)
+        return "* [%s](%s) %s\n" % (post_time, item_url, txt)
 
     def __hasImage(self, item):
         """
