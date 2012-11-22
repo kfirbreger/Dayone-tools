@@ -3,8 +3,10 @@
 # Core
 import json
 import sys
+import os
 import subprocess
 from datetime import datetime
+import xml.etree.ElementTree as ET
 # Libs
 from clint import args
 from clint.textui import puts, colored, indent
@@ -100,29 +102,50 @@ class Plugin(object):
             self.config['last_run'] = datetime.now().isoformat().split('.')[0]
         for entry in self.entries:
             print entry
-            # Using a temp file to create an entry
-            with open('tmpfile', 'w') as f:
-                f.write(entry['text'].encode('UTF-8'))
-                if 'tags' in entry:
-                    f.write(entry['tags'] + "\n")
-            cmd = 'dayone -d="' + entry['datetime'].strftime("%m/%d/%Y %l:%M%p") + '"'
+            cmd = ['dayone']
+            cmd.append('-d="' + entry['datetime'].strftime("%m/%d/%Y %l:%M%p") + '"')
             if 'image' in entry:
-                cmd += ' --photo-file=' + entry['image']
+                cmd.append('--photo-file=' + entry['image'])
             if 'star' in entry:
-                cmd += ' --starred=true'
-            cmd += ' new < tmpfile'
-            puts(colored.blue(cmd))
+                cmd.append('--starred=true')
+            cmd.append('new')
             if not self.dry:
-                subprocess.call(cmd, shell=True)
+                write = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+                new_entry_file = write.communicate(entry['text'].encode('UTF-8'))[0][12:]
+                # Adding tags
+                if 'tags' in self.config and len(self.config['tags']) > 0:
+                    self.addTags(new_entry_file, self.config['tags'])
             # Removing created image
             if 'image' in entry:
                 subprocess.call(['rm', entry['image']])
 
-        # Cleaning up the tmpfile
-        subprocess.call(['rm', 'tmpfile'])
         # Update last run only if this is not a dry run
         if 'last_run' in self.config and not self.dry:
             self.createConfigFile(self.config, self.config_filename)
+
+    def addTags(self, filename, tags):
+        tree = None
+        filename = os.path.expanduser(filename).strip()
+        tree = ET.parse(filename)
+        if tree:
+            root = tree.getroot()
+        else:
+            puts(colored.yellow('Unable to open entry to add tags.'))
+            return
+        tag_elem = ET.SubElement(root[0], 'key')
+        tag_elem.text = 'Tags'
+        tag_elem = ET.SubElement(root[0], 'array')
+        for tag in tags.split(','):
+            t = ET.SubElement(tag_elem, 'string')
+            t.text = tag.strip()
+        # Uglu ugly hack, but will do for now.
+        # @TODO Solve this the proper way
+        xml_str = """<?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        """ + ET.tostring(root, 'utf-8')
+        f = open(filename, 'w')
+        f.write(xml_str)
+        f.close()
 
 
 if __name__ == '__main__':
