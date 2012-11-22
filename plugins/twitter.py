@@ -56,10 +56,10 @@ class DTTwitter(dtools.Plugin):
             puts(colored.blue('Config file made, please fill in the required details'))
             return
         # Geting yesterday's date
-        twitts = False
-        favs = False
+        # Creating digest map
+        dig_map = {}
         yest = date.today() - timedelta(days=1)
-        self.entries = [{'text': '', 'datetime': datetime.combine(yest, time.max)}]
+        self.entries = []
         # Creating the import
         # for screen_name in self.config['screen_names']:
         for i in range(len(self.config['screen_names'])):
@@ -74,18 +74,26 @@ class DTTwitter(dtools.Plugin):
             r = requests.get(self.url['timeline'], params=self.uparams, auth=oauth)
             #print r.json
             for item in r.json:
+                entry_item = 0
                 # Is it from yesterday?
                 dt = datetime.strptime(item['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 post_date = dt.date()
-                if yest != post_date:
+                if yest < post_date:
                     continue
+                elif post_date < self.config['last_run'].date():
+                    continue
+                elif post_date.strftime('%d-%m-%Y') not in dig_map:
+                    dig_map[post_date.strftime('%d-%m-%Y')] = entry_item = len(self.entries)
+                    self.entries.append({'text': '', 'datetime': datetime.combine(post_date, time.max)})
+                else:
+                    entry_item = dig_map[post_date.strftime('%d-%m-%Y')]
                 # Checking if there is an image
                 if self.__hasImage(item):
                     self.entries.append(self.__createPost(item))
                 else:
-                    twitts = True
-                    self.entries[0]['text'] = self.__createPostItem(item) + self.entries[0]['text']
+                    self.entries[entry_item]['text'] = self.__createPostItem(item) + self.entries[entry_item]['text']
             # Create a favourites post
+            # Not yet figured a good solution for this, so taking favs out for now
             if self.config['favorites']:
                 r = requests.get(self.url['favs'], params=self.uparams, auth=oauth)
                 fav_text = u''
@@ -94,15 +102,12 @@ class DTTwitter(dtools.Plugin):
                     post_date = dt.date()
                     if yest != post_date:
                         continue
-                    favs = True
                     fav_text = self.__createPostItem(item) + fav_text  # Favs are not allowed their own entry
-                if favs:
-                    fav_text = u"### Favories\n\n" + fav_text
-            else:
-                fav_text = u''
+
         # Adding title
-        self.entries[0]['text'] = "##Tweets for " + yest.strftime('%d-%m-%Y') + "\n" + self.entries[0]['text'] + fav_text
-        if twitts:
+        for k, v in dig_map.iteritems():
+            self.entries[v]['text'] = "##Tweets for " + k + "\n" + self.entries[v]['text']
+        if len(self.entries) > 0:
             self.writeToJournal()
 
     def __createPostItem(self, item):

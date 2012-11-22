@@ -110,8 +110,9 @@ class Plugin(object):
                 cmd.append('--starred=true')
             cmd.append('new')
             if not self.dry:
-                write = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+                write = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                 new_entry_file = write.communicate(entry['text'].encode('UTF-8'))[0][12:]
+                print new_entry_file
                 # Adding tags
                 if 'tags' in self.config and len(self.config['tags']) > 0:
                     self.addTags(new_entry_file, self.config['tags'])

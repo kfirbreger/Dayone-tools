@@ -22,13 +22,13 @@ class DTInstaPaper(dtools.Plugin):
     def getConfigDict(self):
         conf = {
             "feed": "",
-            "tags": ""
+            "tags": "",
+            'last_run': "1970-01-01T00:00:00",
         }
         return conf
 
     def run(self):
         data = None
-        saved_for_later = False  # Pessimism
         if self.config is None:
             puts(colored.blue('Config file made, please fill in the required details'))
             return
@@ -43,28 +43,29 @@ class DTInstaPaper(dtools.Plugin):
         if data.status != 200:
             print "Feed returned status " + str(data['status'])
             return
+        # Creating digest map
+        dig_map = {}
         # All is well, we can process
         # Geting yesterday's date
         yest = date.today() - timedelta(days=1)
-        self.entries = [{'text': '## Saved to Instapaper on ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
+        self.entries = []
         # Going through the entries, importing only items that are from yesterday
         # @TODO - Also do not import items before last run.
         for item in data.entries:
             # Are we at yesterday?
             post_date = date(*item.published_parsed[:3])
-            # Date - date gives a timedelta object. We then call
-            # its total seconds function to get seconds difference
-            if yest != post_date:
+            if yest < post_date:
                 continue
-            # Deciding if this deserves its own post
-            saved_for_later = True
-            self.entries[0]['text'] += self.__createPostEntry(item)
-        # Adding tags if needed
-        if len(self.config['tags']) > 0:
-            self.entries[0]['text'] += "\n"
-            self.entries[0]['tags'] = self.config['tags']
+            elif post_date < self.config['last_run'].date():
+                continue
+            elif post_date.strftime('%d-%m-%Y') not in dig_map:
+                dig_map[post_date.strftime('%d-%m-%Y')] = entry_item = len(self.entries)
+                self.entries.append({'text': '## Saved to Instapaper on ' + post_date.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(post_date, time.max)})
+            else:
+                entry_item = dig_map[post_date.strftime('%d-%m-%Y')]
+            self.entries[entry_item]['text'] += self.__createPostEntry(item)
 
-        if saved_for_later:
+        if len(self.entries) > 0:
             self.writeToJournal()
 
     def __createPostEntry(self, item):
