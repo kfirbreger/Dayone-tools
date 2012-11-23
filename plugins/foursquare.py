@@ -22,15 +22,14 @@ class DTFourSquare(dtools.Plugin):
     def getConfigDict(self):
         conf = {
             "feed": "",
-            "import_images": False,
             "own_post_on_text": True,
-            "tags": ""
+            "tags": "",
+            'last_run': "1970-01-01T00:00:00",
         }
         return conf
 
     def run(self):
         data = None
-        checkins = False  # Pessimism
         if self.config is None:
             puts(colored.blue('Config file made, please fill in the required details'))
             return
@@ -45,39 +44,47 @@ class DTFourSquare(dtools.Plugin):
         if data.status != 200:
             print "Feed returned status " + str(data['status'])
             return
+        # Creating digest map
+        dig_map = {}
         # All is well, we can process
-        # Geting yesterday's date
+        # Geting yest date
         yest = date.today() - timedelta(days=1)
-        self.entries = [{'text': '## Foursquare checkins for ' + yest.strftime('%d-%m-%Y') + "\n", 'datetime': datetime.combine(yest, time.max)}]
-        # Going through the entries, importing only items that are from yesterday
-        # @TODO - Also do not import items before last run.
+        self.entries = []
+        # For the daily summary reversing the order of import so that
+        # the oldest will be at the top.
         for item in data.entries:
+            entry_item = 0
             # Are we at yesterday?
             post_date = date(*item.published_parsed[:3])
-            # Date - date gives a timedelta object. We then call
-            # its total seconds function to get seconds difference
-            if yest != post_date:
+            # If this is a post from today, or older then last run, ignore
+            if yest < post_date:
                 continue
-            # Deciding if this deserves its own post
-            if self.config['own_post_on_text'] and (len(item.description) > (2 + len(item.title))):
-                self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
+            elif post_date < self.config['last_run'].date():
+                continue
+            elif post_date.strftime('%d-%m-%Y') not in dig_map:
+                dig_map[post_date.strftime('%d-%m-%Y')] = entry_item = len(self.entries)
+                self.entries.append({'text': '', 'datetime': datetime.combine(post_date, time.max)})
             else:
-                checkins = True
-                self.entries[0]['text'] += self.__createPostItem(item)
-        # Adding tags
-        if len(self.config['tags']) > 0:
-            for post in self.entries:
-                post['text'] += "\n\n"
-                post['tags'] = self.config['tags']
-        # Removing first element if there are no global checkins in it
-        if not checkins:
-            self.entries = self.entries[1:]
+                entry_item = dig_map[post_date.strftime('%d-%m-%Y')]
+            # Deciding if this deserves its own post
+            if len(item.description) > (2 + len(item.title)):
+                # Create an extra post?
+                if self.config['own_post_on_text']:
+                    self.entries.append({'text': self.__createPost(item), 'datetime': datetime(*item.published_parsed[:6])})
+                else:
+                    self.entries[entry_item]['text'] = "* " + self.__createPost(item) + "\n" + self.entries[entry_item]['text']
+            else:
+                self.entries[entry_item]['text'] = self.__createPostItem(item) + self.entries[entry_item]['text']
+        # Adding digest header
+        for k, v in dig_map.iteritems():
+            self.entries[v]['text'] = u'## Foursquare checkins for ' + k + "\n" + self.entries[v]['text']
         # Create entries only if there actual entries
         if len(self.entries) > 0:
             self.writeToJournal()
 
     def __createPost(self, item):
-        text = item.description[2:]
+        text = item.description[2:].split('-')
+        text = u"[%s](%s) - %s" % (text[0], item.link, ''.join(text[1:]))
         return text
 
     def __createPostItem(self, item):
