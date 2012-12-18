@@ -59,7 +59,9 @@ class DTStrava(dtools.Plugin):
         txt += "* Duration: " + str(timedelta(seconds=item['elapsedTime'])) + "\n"
         txt += "* Distance: %.2fkm\n" % (item['distance'] / 1000)
         txt += "* Average Speed: %.2fkm/h\n" % (item['averageSpeed'] * 3.6)  # Converting from m/s to km/h
-        txt += "* Averge Watt: %.2fw\n" % item['averageWatts']
+        # avg power may be missing
+        if item['averageWatts'] is not None:
+            txt += "* Averge Watt: %.2fw\n" % item['averageWatts']
         txt += "* Elevation Gain: %dm\n" % int(item['elevationGain'])
         txt += "* Ridden on the %s\n" % item['bike']['name']
         txt += "* [link](http://app.strava.com/rides/%d)\n" % item['id']
