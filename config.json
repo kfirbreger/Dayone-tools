@@ -5,10 +5,6 @@
             "location": "plugins/foursquare"
         },
         {
-            "name": "dtinstagram",
-            "location": "plugins/dtinstagram"
-        },
-        {
             "name": "github",
             "location": "plugins/github"
         },

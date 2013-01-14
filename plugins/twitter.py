@@ -106,7 +106,7 @@ class DTTwitter(dtools.Plugin):
 
         # Adding title
         for k, v in dig_map.iteritems():
-            self.entries[v]['text'] = "##Tweets for " + k + "\n" + self.entries[v]['text']
+            self.entries[v]['text'] = "## Tweets for " + k + "\n" + self.entries[v]['text']
         if len(self.entries) > 0:
             self.writeToJournal()
 
