@@ -2,7 +2,7 @@
 from datetime import datetime, date, timedelta, time
 # Libs
 import requests
-from requests.auth import OAuth1
+from requests_oauthlib import OAuth1
 from clint.textui import puts, colored
 # Project
 import dtools
@@ -65,15 +65,15 @@ class DTTwitter(dtools.Plugin):
         for i in range(len(self.config['screen_names'])):
             screen_name = self.config['screen_names'][i]
             print "Checking for " + screen_name
-            oauth = OAuth1(self.config['client_key'], self.config['client_key_secret'],
+            headerauth = OAuth1(self.config['client_key'], self.config['client_key_secret'],
                             self.config['access_token'][i], self.config['access_token_secret'][i],
                             signature_type='auth_header')
             # Adding current screen name
             self.uparams['screen_name'] = screen_name
             # Sending the request
-            r = requests.get(self.url['timeline'], params=self.uparams, auth=oauth)
+            r = requests.get(self.url['timeline'], params=self.uparams, auth=headerauth)
             #print r.json
-            for item in r.json:
+            for item in r.json():
                 entry_item = 0
                 # Is it from yesterday?
                 dt = datetime.strptime(item['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
@@ -95,9 +95,9 @@ class DTTwitter(dtools.Plugin):
             # Create a favourites post
             # Not yet figured a good solution for this, so taking favs out for now
             if self.config['favorites']:
-                r = requests.get(self.url['favs'], params=self.uparams, auth=oauth)
+                r = requests.get(self.url['favs'], params=self.uparams, auth=headerauth)
                 fav_text = u''
-                for item in r.json:
+                for item in r.json():
                     dt = datetime.strptime(item['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                     post_date = dt.date()
                     if yest != post_date:

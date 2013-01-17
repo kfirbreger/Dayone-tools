@@ -39,8 +39,8 @@ class DTStrava(dtools.Plugin):
 
         #now = datetime.now().strftime('%Y-%m-%d %H:%M')
         r = requests.get('http://www.strava.com/api/v1/rides', params={'athleteId': self.config['athlete_id']})
-        for ride in r.json['rides']:
-            ride_data = requests.get('http://www.strava.com/api/v1/rides/' + str(ride['id'])).json
+        for ride in r.json()['rides']:
+            ride_data = requests.get('http://www.strava.com/api/v1/rides/' + str(ride['id'])).json()
             # Checking if this is newer than last run
             ride_date = datetime.strptime(ride_data['ride']['startDateLocal'][:-1], '%Y-%m-%dT%H:%M:%S')
             # If its an old entry move on

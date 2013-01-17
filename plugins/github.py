@@ -40,8 +40,8 @@ class DTGitHub(dtools.Plugin):
         yest = date.today() - timedelta(days=1)
         self.entries = []
         r = requests.get('https://github.com/' + self.config['username'] + '.json')
-        for item in r.json:
-            # Checking of this is a post
+        for item in r.json():
+            # Checking if this is a post
             created = self.__parseDateTime(item['created_at'])
             post_date = created.date()
             if yest < post_date:
