@@ -5,20 +5,12 @@
             "location": "plugins/dtinstagram"
         },
         {
-            "name": "foursquare",
-            "location": "plugins/foursquare"
-        },
-        {
             "name": "github",
             "location": "plugins/github"
         },
         {
             "name": "instapaper",
             "location": "plugins/instapaper"
-        },
-        {
-            "name": "strava",
-            "location": "plugin/strava"
         },
         {
             "name": "twitter",
