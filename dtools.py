@@ -109,13 +109,17 @@ class Plugin(object):
             if 'star' in entry:
                 cmd.append('--starred=true')
             cmd.append('new')
+            entry['text'] = unicode(entry['text'].decode('UTF-8'))
             if not self.dry:
-                write = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                new_entry_file = write.communicate(entry['text'].encode('UTF-8'))[0][12:]
-                print new_entry_file
-                # Adding tags
-                if 'tags' in self.config and len(self.config['tags']) > 0:
-                    self.addTags(new_entry_file, self.config['tags'])
+                try:
+                    write = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                    new_entry_file = write.communicate(entry['text'].encode('UTF-8'))[0][12:]
+                    print new_entry_file
+                    # Adding tags
+                    if 'tags' in self.config and len(self.config['tags']) > 0:
+                        self.addTags(new_entry_file, self.config['tags'])
+                except Exception, e:
+                    print 'Error importing: ' + str(e)
             # Removing created image
             if 'image' in entry:
                 subprocess.call(['rm', entry['image']])
