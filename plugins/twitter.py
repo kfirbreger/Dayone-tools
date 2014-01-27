@@ -14,8 +14,8 @@ class DTTwitter(dtools.Plugin):
         super(DTTwitter, self).__init__()
         # Urls used in the requests to twitter
         self.url = {
-            'favs': 'http://api.twitter.com/1.1/favorites/list.json',
-            'timeline': 'http://api.twitter.com/1.1/statuses/user_timeline.json'
+            'favs': 'https://api.twitter.com/1.1/favorites/list.json',
+            'timeline': 'https://api.twitter.com/1.1/statuses/user_timeline.json'
         }
         # General params to send with the request
         self.uparams = {
@@ -72,7 +72,6 @@ class DTTwitter(dtools.Plugin):
             self.uparams['screen_name'] = screen_name
             # Sending the request
             r = requests.get(self.url['timeline'], params=self.uparams, auth=headerauth)
-            #print r.json
             for item in r.json():
                 entry_item = 0
                 # Is it from yesterday?
